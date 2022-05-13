@@ -2,7 +2,7 @@
 
 # 1. Die Ordnerstruktur vom Repository ist unverändert
 # 2. Die Ausgefüllten Raster vom Bereichplanungspraxis sind im selben Ordner wie diese Datei. Die Dateien beginnen alle mit der vierstelligen BFS-NR_XXXXXX.xlsx
-# 3. Die Auswertungen für den Bereich Infrasturktur und Befragung ist gemacht und die Werte sind in der Datei Gesamtbewertung/Kaptiel_5_P2_Übersichtstabelle.xlsx eingetragen. Die Datei ist nach BFS-Nr. aufsteigend sortiert.
+# 3. Die Auswertungen für den Bereich Infrasturktur und Befragung ist gemacht und die Werte sind in der Datei Gesamtbewertung/Kaptiel_5_P2_Übersichtstabelle.xlsx eingetragen.
 
 # Wenn 3. nicht erfüllt ist, können nur die Diagramme zur Planungspraxis verwendet werden.
 
@@ -170,12 +170,15 @@ df.Einwohner <- data.frame(t(sapply(df.list_Einwohner,c)))
 colnames(df.Einwohner) <- clean.rownames
 
 #Daten Infrastruktur und Befragung importieren 
-#Das Excel muss A-Z nach Gemeindename sortiert sein.
-df.gesamtauswertung <-as.data.frame(read_excel("Gesamtbewertung/Kaptiel_5_P2_Übersichtstabelle.xlsx",range=paste0("Übersichtstabelle!C5:S",5+n.gemeinden)))
+df.gesamtauswertung <-as.data.frame(read_excel("Gesamtbewertung/Kaptiel_5_P2_Übersichtstabelle.xlsx",range=paste0("Übersichtstabelle!B5:U",5+n.gemeinden)))
+df.gesamtauswertung <- df.gesamtauswertung[order(df.gesamtauswertung$BFS),]
+df.infrastruktur <- df.gesamtauswertung[,c(2,3,4,5,6)]
+df.befragung <- df.gesamtauswertung[,c(13,14,15,16,17,18)]
 
-df.infrastruktur <- as.data.frame(read_excel("Gesamtbewertung/Kaptiel_5_P2_Übersichtstabelle.xlsx",range=paste0("Übersichtstabelle!C5:G",5+n.gemeinden)))
+colnames(df.infrastruktur)[colnames(df.infrastruktur) == "Total...6"] <- "Total"
+colnames(df.befragung)[colnames(df.befragung) == "Total...18"] <- "Total"
+
 df.infrastruktur_scaled <- round(df.infrastruktur/100, 2)
-df.befragung <- as.data.frame(read_excel("Gesamtbewertung/Kaptiel_5_P2_Übersichtstabelle.xlsx",range=paste0("Übersichtstabelle!N5:s",5+n.gemeinden) ))
 df.befragung_scaled <- round(df.befragung/100, 2)
 
 #Deutsche Beschriftung
@@ -183,155 +186,154 @@ df.befragung_scaled <- round(df.befragung/100, 2)
 c.infrastruktur.d <- colnames(df.infrastruktur)
 c.befragung.d <- colnames(df.befragung)
 
-
 #Eine Zeile mit den Minimas, Maximas und Mittelwerte definieren und als Zeilen 1-3 an das data frame anfügen.
- c.max.punkte.praxis <- c(13,14,16,35,22,100)
- c.max.punkte.infra <- c(1,1,1,1,1)
- c.max.punkte.befragung <- c(1,1,1,1,1,1)
- 
- c.min.punkte.infra <- c(0,0,0,0,0)
- c.min.punkte.praxis <- c(0,0,0,0,0,0)
- c.min.punkte.befragung <- c.min.punkte.praxis
- 
- c.mittelwerte.infrastruktur_scaled <- colMeans(df.infrastruktur_scaled)
- c.mittelwerte.planungspraxis <- colMeans(df.planungspraxis)
- c.mittelwerte.befragung_scaled <- colMeans(df.befragung_scaled)
+c.max.punkte.praxis <- c(13,14,16,35,22,100)
+c.max.punkte.infra <- c(1,1,1,1,1)
+c.max.punkte.befragung <- c(1,1,1,1,1,1)
 
- #Die Zeilen Min, Max und Average beschriften
- df.planungspraxis <- rbind(c.max.punkte.praxis, c.min.punkte.praxis, c.mittelwerte.planungspraxis, df.planungspraxis)
- rownames(df.planungspraxis) <- c('Max', 'Min', 'Average', clean.rownames)
- 
- df.infrastruktur_scaled <- rbind(c.max.punkte.infra, c.min.punkte.infra, c.mittelwerte.infrastruktur_scaled, df.infrastruktur_scaled)
+c.min.punkte.infra <- c(0,0,0,0,0)
+c.min.punkte.praxis <- c(0,0,0,0,0,0)
+c.min.punkte.befragung <- c.min.punkte.praxis
+
+c.mittelwerte.infrastruktur_scaled <- colMeans(df.infrastruktur_scaled)
+c.mittelwerte.planungspraxis <- colMeans(df.planungspraxis)
+c.mittelwerte.befragung_scaled <- colMeans(df.befragung_scaled)
+
+#Die Zeilen Min, Max und Average beschriften
+df.planungspraxis <- rbind(c.max.punkte.praxis, c.min.punkte.praxis, c.mittelwerte.planungspraxis, df.planungspraxis)
+rownames(df.planungspraxis) <- c('Max', 'Min', 'Average', clean.rownames)
+
+df.infrastruktur_scaled <- rbind(c.max.punkte.infra, c.min.punkte.infra, c.mittelwerte.infrastruktur_scaled, df.infrastruktur_scaled)
 rownames(df.infrastruktur_scaled) <- c('Max', 'Min', 'Average', clean.rownames)
 
 df.befragung_scaled <- rbind(c.max.punkte.befragung, c.min.punkte.befragung, c.mittelwerte.befragung_scaled, df.befragung_scaled)
 rownames(df.befragung_scaled) <- c('Max', 'Min', 'Average', clean.rownames)
- #Auf Werte von 0-1 Skalieren
- df.planungspraxis.scaled <- round(apply(df.planungspraxis, 2, scales::rescale), 2)
- df.planungspraxis.scaled <- as.data.frame(df.planungspraxis.scaled)
+#Auf Werte von 0-1 Skalieren
+df.planungspraxis.scaled <- round(apply(df.planungspraxis, 2, scales::rescale), 2)
+df.planungspraxis.scaled <- as.data.frame(df.planungspraxis.scaled)
 
- #Alle Bereiche zusammfassen
- 
- df_alle <- cbind(df.infrastruktur_scaled[c(1,2,3,4)], df.planungspraxis.scaled[c(1,2,3,4,5)], df.befragung_scaled[c(1,2,3,4,5)])
- df_alle <- round(df_alle, 2)
- #Holt Gemeindenamen und BFS Nummer
- ## Die Datei BFSNR_Bewertung_Planungspraxis_Gemeindename.xlsx muss im Übergeordneten Verzeichnis liegen.
- 
-  df.list.gemeindenamen <- sapply("../BFSNR_Bewertung_Planungspraxis_Gemeindename.xlsx", range = "Gemeinde_Kennzahlen!A9:B2181", read_excel)
-  GemeindeNamen <- df.list.gemeindenamen[1]
- 
+#Alle Bereiche zusammfassen
+
+df_alle <- cbind(df.infrastruktur_scaled[c(1,2,3,4)], df.planungspraxis.scaled[c(1,2,3,4,5)], df.befragung_scaled[c(1,2,3,4,5)])
+df_alle <- round(df_alle, 2)
+#Holt Gemeindenamen und BFS Nummer
+## Die Datei BFSNR_Bewertung_Planungspraxis_Gemeindename.xlsx muss im Übergeordneten Verzeichnis liegen.
+
+df.list.gemeindenamen <- sapply("../BFSNR_Bewertung_Planungspraxis_Gemeindename.xlsx", range = "Gemeinde_Kennzahlen!A9:B2181", read_excel)
+GemeindeNamen <- df.list.gemeindenamen[1]
+
+
+#Bereitet die Daten für GGPlot vor 
+df.planungspraxis.scaled.plot <- df.planungspraxis.scaled[4:nrow(df.planungspraxis.scaled),]
+df.infrastruktur.scaled.plot <- df.infrastruktur_scaled[4:nrow(df.infrastruktur_scaled),]
+df.befragung.scaled.plot <- df.befragung_scaled[4:nrow(df.befragung_scaled),]
+
+
+GemeindeNamen <- as.factor(as.integer(row.names(df.planungspraxis.scaled.plot)))
+GemeindeNamen <- factor(GemeindeNamen, levels = c(df.list.gemeindenamen[[1]]), labels = c(df.list.gemeindenamen[[2]]))
+
+
+
+df.planungspraxis.scaled.plot <- cbind(df.planungspraxis.scaled.plot, GemeindeNamen)
+df.infrastruktur.scaled.plot <- cbind(df.infrastruktur.scaled.plot, GemeindeNamen)
+df.befragung.scaled.plot <- cbind(df.befragung.scaled.plot, GemeindeNamen)
+
+
+
+df.planungspraxis.scaled.plot.long <- df.planungspraxis.scaled.plot %>% gather(categorie, bewertung, -c(GemeindeNamen))
+df.infrastruktur.scaled.plot.long <- df.infrastruktur.scaled.plot %>% gather(categorie, bewertung, -c(GemeindeNamen))
+df.befragung.scaled.plot.long <- df.befragung.scaled.plot %>% gather(categorie, bewertung, -c(GemeindeNamen))
+
+df.planungspraxis.scaled.plot.long$categorie <- factor(df.planungspraxis.scaled.plot.long$categorie,levels = rev(c.planungspraxis.d))  
+df.infrastruktur.scaled.plot.long$categorie <- factor(df.infrastruktur.scaled.plot.long$categorie,levels= rev(c.infrastruktur.d))
+df.befragung.scaled.plot.long$categorie <- factor(df.befragung.scaled.plot.long$categorie, levels = rev(c.befragung.d))
+
+mean.planungspraxis <- df.planungspraxis.scaled.plot.long%>% group_by(categorie)%>%summarise(bewertung=mean(bewertung))
+mean.infrastruktur <- df.infrastruktur.scaled.plot.long%>% group_by(categorie)%>%summarise(bewertung=mean(bewertung))
+mean.befragung <- df.befragung.scaled.plot.long%>% group_by(categorie)%>%summarise(bewertung=mean(bewertung))
+
+
+#Spiderdiagramme erzeugen und in Unterordner Spider mit als BFS-NR.svg abspeichern
+for (i in 4:nrow(df.planungspraxis.scaled)) {
+  setwd("Spider")
+  file.name <- gsub(" ", "", paste(row.names(df.planungspraxis.scaled)[i],".svg"))
+  svg(file.name)
   
-  #Bereitet die Daten für GGPlot vor 
-  df.planungspraxis.scaled.plot <- df.planungspraxis.scaled[4:nrow(df.planungspraxis.scaled),]
-  df.infrastruktur.scaled.plot <- df.infrastruktur_scaled[4:nrow(df.infrastruktur_scaled),]
-  df.befragung.scaled.plot <- df.befragung_scaled[4:nrow(df.befragung_scaled),]
+  GemeindeName <- as.factor(as.integer(row.names(df.planungspraxis.scaled)[i]))
+  GemeindeName <- factor(GemeindeName, levels = c(df.list.gemeindenamen[[1]]), labels = c(df.list.gemeindenamen[[2]]))
   
-
-  GemeindeNamen <- as.factor(as.integer(row.names(df.planungspraxis.scaled.plot)))
-  GemeindeNamen <- factor(GemeindeNamen, levels = c(df.list.gemeindenamen[[1]]), labels = c(df.list.gemeindenamen[[2]]))
-  
-
-  
-  df.planungspraxis.scaled.plot <- cbind(df.planungspraxis.scaled.plot, GemeindeNamen)
-  df.infrastruktur.scaled.plot <- cbind(df.infrastruktur.scaled.plot, GemeindeNamen)
-  df.befragung.scaled.plot <- cbind(df.befragung.scaled.plot, GemeindeNamen)
-  
-
-  
-  df.planungspraxis.scaled.plot.long <- df.planungspraxis.scaled.plot %>% gather(categorie, bewertung, -c(GemeindeNamen))
-  df.infrastruktur.scaled.plot.long <- df.infrastruktur.scaled.plot %>% gather(categorie, bewertung, -c(GemeindeNamen))
-  df.befragung.scaled.plot.long <- df.befragung.scaled.plot %>% gather(categorie, bewertung, -c(GemeindeNamen))
-  
-  df.planungspraxis.scaled.plot.long$categorie <- factor(df.planungspraxis.scaled.plot.long$categorie,levels = rev(c.planungspraxis.d))  
-  df.infrastruktur.scaled.plot.long$categorie <- factor(df.infrastruktur.scaled.plot.long$categorie,levels= rev(c.infrastruktur.d))
-  df.befragung.scaled.plot.long$categorie <- factor(df.befragung.scaled.plot.long$categorie, levels = rev(c.befragung.d))
-
-  mean.planungspraxis <- df.planungspraxis.scaled.plot.long%>% group_by(categorie)%>%summarise(bewertung=mean(bewertung))
-  mean.infrastruktur <- df.infrastruktur.scaled.plot.long%>% group_by(categorie)%>%summarise(bewertung=mean(bewertung))
-  mean.befragung <- df.befragung.scaled.plot.long%>% group_by(categorie)%>%summarise(bewertung=mean(bewertung))
+  radarchart(
+    df_alle[c(1:3, i), ],
+    pfcol = c("#b2b2b280",NA),
+    pcol= c(NA,gehsund_cols("green")), plty = 1, plwd = 2,
+    title = GemeindeName,
+    axistype=1,
+    vlcex=0.81,
+    cglty=1,
+    cglcol="#b2b2b280",
+    axislabcol="#b2b2b280",
+    caxislabels=c("0%", "25%", "50%", "75%", "100%")
+  )
   
   
- #Spiderdiagramme erzeugen und in Unterordner Spider mit als BFS-NR.svg abspeichern
- for (i in 4:nrow(df.planungspraxis.scaled)) {
-         setwd("Spider")
-         file.name <- gsub(" ", "", paste(row.names(df.planungspraxis.scaled)[i],".svg"))
-         svg(file.name)
-         
-        GemeindeName <- as.factor(as.integer(row.names(df.planungspraxis.scaled)[i]))
-        GemeindeName <- factor(GemeindeName, levels = c(df.list.gemeindenamen[[1]]), labels = c(df.list.gemeindenamen[[2]]))
-         
-         radarchart(
-                 df_alle[c(1:3, i), ],
-                 pfcol = c("#b2b2b280",NA),
-                 pcol= c(NA,gehsund_cols("green")), plty = 1, plwd = 2,
-                 title = GemeindeName,
-                 axistype=1,
-                 vlcex=0.81,
-                 cglty=1,
-                 cglcol="#b2b2b280",
-                 axislabcol="#b2b2b280",
-                 caxislabels=c("0%", "25%", "50%", "75%", "100%")
-         )
-         
-         
-            dev.off() 
-         setwd("..")
-         
-#Strahldiagramm mit Mittelwert Planungspraxis wird in Unterordner planungspraxis abgelegt.
-         
-         setwd("planungspraxis")
-         file.name <- gsub(" ", "", paste(row.names(df.planungspraxis.scaled)[i],".svg"))
+  dev.off() 
+  setwd("..")
+  
+  #Strahldiagramm mit Mittelwert Planungspraxis wird in Unterordner planungspraxis abgelegt.
+  
+  setwd("planungspraxis")
+  file.name <- gsub(" ", "", paste(row.names(df.planungspraxis.scaled)[i],".svg"))
+  
+  df.planungspraxis.scaled.plot.long.single <- df.planungspraxis.scaled.plot.long %>%filter(GemeindeNamen == GemeindeName)
+  
+  planungspraxis.scaled.plot.title <- toString(paste("Planungspraxis",GemeindeName))
+  
+  image=df.planungspraxis.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3)+ggtitle(planungspraxis.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.planungspraxis.scaled.plot.long.single, color = gehsund_cols("pink"), size = 6)+geom_point(data = mean.planungspraxis, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
+  
+  ggsave(file=file.name, plot=image, width=10, height=5)
+  
+  
+  
+  setwd("..")
+  
+  #Strahldiagramm mit Mittelwert Infrastruktur wird in Unterordner strahl_infrastruktur abgelegt.
+  
+  setwd("strahl_infrastruktur")
+  file.name <- gsub(" ", "", paste(row.names(df.planungspraxis.scaled)[i],".svg"))
+  
+  df.infrastruktur.scaled.plot.long.single <- df.infrastruktur.scaled.plot.long %>%filter(GemeindeNamen == GemeindeName)
+  
+  infrastruktur.scaled.plot.title <- toString(paste("Fussverkehrstest",GemeindeName))
+  
+  image=df.infrastruktur.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3, outlier.shape = NA)+ggtitle(infrastruktur.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.infrastruktur.scaled.plot.long.single, color = gehsund_cols("green"), size = 6)+geom_point(data = mean.infrastruktur, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
+  
+  ggsave(file=file.name, plot=image, width=10, height=5)
+  
+  
+  
+  setwd("..")
+  
+  #Strahldiagramm mit Mittelwert Befragung wird in Unterordner strahl_befragung abgelegt.
+  
+  setwd("strahl_befragung")
+  file.name <- gsub(" ", "", paste(row.names(df.planungspraxis.scaled)[i],".svg"))
+  
+  df.befragung.scaled.plot.long.single <- df.befragung.scaled.plot.long %>%filter(GemeindeNamen == GemeindeName)
+  
+  befragung.scaled.plot.title <- toString(paste("Zufriedenheit",GemeindeName))
+  
+  image=df.befragung.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3, outlier.shape = NA)+ggtitle(befragung.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.befragung.scaled.plot.long.single, color = gehsund_cols("blue"), size = 6)+geom_point(data = mean.befragung, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
+  
+  ggsave(file=file.name, plot=image, width=10, height=5)
+  
+  
+  
+  setwd("..")
+  
+}
+df.planungspraxis.scaled.plot.long$categorie <- factor(df.planungspraxis.scaled.plot.long$categorie,levels = c.planungspraxis.d)  
 
-         df.planungspraxis.scaled.plot.long.single <- df.planungspraxis.scaled.plot.long %>%filter(GemeindeNamen == GemeindeName)
-         
-         planungspraxis.scaled.plot.title <- toString(paste("Planungspraxis",GemeindeName))
-         
-         image=df.planungspraxis.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3)+ggtitle(planungspraxis.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.planungspraxis.scaled.plot.long.single, color = gehsund_cols("pink"), size = 6)+geom_point(data = mean.planungspraxis, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
 
-         ggsave(file=file.name, plot=image, width=10, height=5)
-         
-
-         
-         setwd("..")
-         
-         #Strahldiagramm mit Mittelwert Infrastruktur wird in Unterordner strahl_infrastruktur abgelegt.
-         
-         setwd("strahl_infrastruktur")
-         file.name <- gsub(" ", "", paste(row.names(df.planungspraxis.scaled)[i],".svg"))
-         
-         df.infrastruktur.scaled.plot.long.single <- df.infrastruktur.scaled.plot.long %>%filter(GemeindeNamen == GemeindeName)
-         
-         infrastruktur.scaled.plot.title <- toString(paste("Fussverkehrstest",GemeindeName))
-         
-         image=df.infrastruktur.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3, outlier.shape = NA)+ggtitle(infrastruktur.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.infrastruktur.scaled.plot.long.single, color = gehsund_cols("green"), size = 6)+geom_point(data = mean.infrastruktur, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
-
-         ggsave(file=file.name, plot=image, width=10, height=5)
-         
-         
-         
-         setwd("..")
-         
-         #Strahldiagramm mit Mittelwert Befragung wird in Unterordner strahl_befragung abgelegt.
-         
-         setwd("strahl_befragung")
-         file.name <- gsub(" ", "", paste(row.names(df.planungspraxis.scaled)[i],".svg"))
-         
-         df.befragung.scaled.plot.long.single <- df.befragung.scaled.plot.long %>%filter(GemeindeNamen == GemeindeName)
-         
-         befragung.scaled.plot.title <- toString(paste("Zufriedenheit",GemeindeName))
-         
-         image=df.befragung.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3, outlier.shape = NA)+ggtitle(befragung.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.befragung.scaled.plot.long.single, color = gehsund_cols("blue"), size = 6)+geom_point(data = mean.befragung, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
-
-         ggsave(file=file.name, plot=image, width=10, height=5)
-         
-         
-         
-         setwd("..")
-         
- }
-  df.planungspraxis.scaled.plot.long$categorie <- factor(df.planungspraxis.scaled.plot.long$categorie,levels = c.planungspraxis.d)  
-
- 
 
 
 
@@ -430,7 +432,7 @@ for (i in 4:nrow(df.planungspraxis.scaled)) {
   planungspraxis.scaled.plot.title <- toString(paste("Planification communale",GemeindeName))
   
   image=df.planungspraxis.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3)+ggtitle(planungspraxis.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.planungspraxis.scaled.plot.long.single, color = gehsund_cols("pink"), size = 6)+geom_point(data = mean.planungspraxis, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
-
+  
   ggsave(file=file.name, plot=image, width=10, height=5)
   
   
@@ -448,7 +450,7 @@ for (i in 4:nrow(df.planungspraxis.scaled)) {
   infrastruktur.scaled.plot.title <- toString(paste("Analyse de terrain",GemeindeName))
   
   image=df.infrastruktur.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3, outlier.shape = NA)+ggtitle(infrastruktur.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.infrastruktur.scaled.plot.long.single, color = gehsund_cols("green"), size = 6)+geom_point(data = mean.infrastruktur, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
-
+  
   ggsave(file=file.name, plot=image, width=10, height=5)
   
   
@@ -466,7 +468,7 @@ for (i in 4:nrow(df.planungspraxis.scaled)) {
   befragung.scaled.plot.title <- toString(paste("Sondage marchabilité",GemeindeName))
   
   image=df.befragung.scaled.plot.long %>% ggplot(aes(x=categorie, y=bewertung)) + scale_y_continuous(labels=scales::percent) + coord_flip() + geom_point(color= gehsund_cols("dark grey"), size = 3, outlier.shape = NA)+ggtitle(befragung.scaled.plot.title)+theme(axis.title.x = element_blank(), axis.title.y = element_blank(), text = element_text(family = "Calibri", size=20)) +geom_point(data = df.befragung.scaled.plot.long.single, color = gehsund_cols("blue"), size = 6)+geom_point(data = mean.befragung, mapping=aes(x=as.numeric(categorie)+0.05, y=bewertung), color = "black", size =10, shape ="|")+theme(legend.position="none")
-
+  
   ggsave(file=file.name, plot=image, width=10, height=5)
   
   
