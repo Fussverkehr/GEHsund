@@ -171,6 +171,7 @@ colnames(df.Einwohner) <- clean.rownames
 
 #Daten Infrastruktur und Befragung importieren 
 #Das Excel muss A-Z nach Gemeindename sortiert sein.
+df.gesamtauswertung <-as.data.frame(read_excel("Gesamtbewertung/Kaptiel_5_P2_Übersichtstabelle.xlsx",range=paste0("Übersichtstabelle!C5:S",5+n.gemeinden)))
 
 df.infrastruktur <- as.data.frame(read_excel("Gesamtbewertung/Kaptiel_5_P2_Übersichtstabelle.xlsx",range=paste0("Übersichtstabelle!C5:G",5+n.gemeinden)))
 df.infrastruktur_scaled <- round(df.infrastruktur/100, 2)
